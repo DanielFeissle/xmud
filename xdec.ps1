@@ -1,6 +1,6 @@
 #Excel Encrypt (xenc)
-#May 27 2021
-#Usage: .\xenc <EXCEL File to be obstrusted> <COLUMN to be muddled>
+#June 14 2021
+#Usage: .\xdec <EXCEL File to be obstrusted> <COLUMN to be muddled>
 param([String]$xlsxInput="file.xlsx", [int32]$ktxt="0") 
 
 
@@ -50,15 +50,15 @@ Write-Output $null >> ShutDownWatcher #create a file at the begining
 Write-Warning   "TEST"
 
 #call banner script here
-& .\pban.ps1 "xenc"
+& .\pban.ps1 "xdec"
 
 
  Get-Content "$PSScriptRoot\temp.txt"
-Remove-Item "$PSScriptRoot\out\tempFile.xlsx"
-$xFile="$PSScriptRoot\out\tempFile.xlsx"
+Remove-Item "$PSScriptRoot\out\tempFile_dec.xlsx"
+$xFile="$PSScriptRoot\out\tempFile_dec.xlsx"
  $ExcelWB = new-object -comobject excel.application
  Write-Output "Converting to xlsx"
- Get-ChildItem -Path $PSScriptRoot -Filter "*.xlsx" | ForEach-Object{
+ Get-ChildItem -Path "$PSScriptRoot\out" -Filter "*.xlsx" | ForEach-Object{
      Write-Output "$_"
      $Workbook = $ExcelWB.Workbooks.Open($_.Fullname) 
      $worksheet = $Workbook.sheets.item("Sheet1")
@@ -66,50 +66,41 @@ $xFile="$PSScriptRoot\out\tempFile.xlsx"
      Write-Output "INTEROP counts this many rows: $countUsed"
      $countColumns = $worksheet.UsedRange.Columns.Count
      Write-Output "INTEROP counts this many columns: $countColumns"
-    Write-Output "">key.txt
-	Write-Output "Extract column for faster processing"
-	$testCol=$WorkSheet.Columns(4)
-	$testV=($testCol[1].Value2 -split '\r?\n').Trim()
-     for ($i = 0; $i -le $countUsed; $i++) {
+   # Write-Output "">key.txt
+     for ($i = 1; $i -le $countUsed; $i++) {
          $uid=New-Guid
-		 $tc=$testV[$i]
-		# echo "THIS IS" $testV[$i]
-         if ( $tc -ne $null)
-         {
-			 if ($tc -ne "")
-			 {
-				Write-Output "$tc">>key.txt
-				$testV[$i]="$uid"
-				$WorkSheet.Columns.Replace("$tc","$uid") | out-null
-				$te = $te + 1
-			 } 
 
 
-         }
+         #if ( $ws.Cells.Item(4, $i).Value2 -eq "sort" ) {
+         #$tc= $worksheet.Cells.Item($i, 4).Value2 #get the tc#
+		 $tc = (Get-Content "$PSScriptRoot\key.txt")[$i]
+if ($tc -notmatch '........-....-....-....-............')
+{
+	if ( $tc -ne $null)
+	{
+	   $uuid=$worksheet.Cells.Item($i, 4).Value2
+	   $worksheet.Cells.Item($i, 4).Value2="$tc"
+	}
 
 
 
 
-        # echo "$i" "$tc"
-		Write-Host -NoNewline "."
-         }
-		 #$testCol.Value2=$testV
-		 Write-Host ""
-		 Write-Host -NoNewline "Toss column back in,"
-		 for ($t=1; $t -le $countUsed; $t++)
-		 {
-			$worksheet.Cells.Item($t, 4).Value2=$testV[$t-1]
-		 }
-		 Write-Host -NoNewline " Done."
-		 Write-Host ""
-#echo "FINAL RESULT" $testV "END"
-	 #	 $WorkSheet.Columns(4)= $testCol.Value2
+   # echo "$i" "$tc"
+	}
+	else {
+		if ($tc -ne $null)
+		{
+			$uuid=$worksheet.Cells.Item($i, 4).Value2
+			$WorkSheet.Columns.Replace("$uuid","$tc") | out-null
 
+		}
+
+	}
+}
 
      $Workbook.SaveAs("$xFile")
      #$Workbook.SaveAs("$xFile", 6) #6 is for xlsx
      $Workbook.Close($false)
-
  }
 
 
