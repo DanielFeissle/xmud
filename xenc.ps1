@@ -51,7 +51,6 @@ If(!(test-path "$PSScriptRoot\\keys"))
 }
 
 
-Write-Warning   "TEST"
 
 #call banner script here
 & .\pban.ps1 "xenc"
@@ -63,12 +62,12 @@ Write-Warning   "TEST"
  $ExcelWB = new-object -comobject excel.application
  Write-Output "Converting to xlsx"
  $sel=Get-ChildItem -Path $PSScriptRoot -Filter "*.xlsx" 
- if ($null -eq $sel -or (test-path "$PSScriptRoot\keys\$sel.$colval.exf"))
+ if ($null -eq $sel )
 {
 	Remove-Item ShutDownWatcher #remove the watch file
 	Write-Warning "No valid xlsx files found in directory: $pwd"
 	Write-Warning "File may not be present or file may already be encrypted"
-	exit 1
+
 }
 else {
 	Get-ChildItem -Path $PSScriptRoot -Filter "*.xlsx" | ForEach-Object{
@@ -82,13 +81,20 @@ else {
 	   $Workbook = $ExcelWB.Workbooks.Open($_.Fullname) 
 	   for ($i = 1; $i -le $Workbook.Sheets.Count; $i++)
 		  {
+			  $errorVal=0
 			 $worksheet = $Workbook.Sheets.Item($i)
 			   $countUsed = $worksheet.UsedRange.Rows.Count
 			   Write-Output "INTEROP counts this many rows: $countUsed"
 			   $countColumns = $worksheet.UsedRange.Columns.Count
 			   Write-Output "INTEROP counts this many columns: $countColumns"
-			  Write-Output "">"keys\\$valName.$colval.exf"
-			  Remove-Item "keys\\$valName.$colval.exf"
+			   $xx=$countUsed+$countColumns
+			   $PM=Get-Random -Maximum $xx -SetSeed $colval
+			   $colRef=($PM + $colval) * ($countUsed + $countColumns)
+			   if (!(test-path "$PSScriptRoot\keys\$sel.$colRef.exf"))
+			   {
+	
+			  Write-Output "">"keys\\$valName.$colRef.exf"
+			  Remove-Item "keys\\$valName.$colRef.exf"
 			  Write-Output "Extract column for faster processing"
 			  $testCol=$WorkSheet.Columns($colval)
 			  $testV=($testCol[1].Value2 -split '\r?\n').Trim()
@@ -103,7 +109,7 @@ else {
 				   {
 					   if ($tc -ne "")
 					   {
-						  Write-Output "$tc">>"keys\\$valName.$colval.exf"
+						  Write-Output "$tc">>"keys\\$valName.$colRef.exf"
 						  $testV[$i]="$uid"
 						  #$df=$ft["$tc"].Count
 						  $WorkSheet.Columns.Replace("$tc","$uid") | out-null
@@ -112,9 +118,6 @@ else {
 				   
 				   
 				   }
-			   
-			   
-			   
 			   
 				  # echo "$i" "$tc"
 			  ##	Write-Host -NoNewline "."
@@ -128,14 +131,32 @@ else {
 				   }
 				   Write-Host -NoNewline " Done."
 				   Write-Host ""
+				}
+				else {
+					$errorVal=1
+					break
+				}
 		  #echo "FINAL RESULT" $testV "END"
 			   #	 $WorkSheet.Columns(4)= $testCol.Value2
+		  }
+
+		  if ( $errorVal -eq 1 )
+		  {
+			Write-Error "File may already be encrypted. Aborting encryption. Refer to the keys folder."
+			$ExcelWB.quit()
+			[void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($testCol)
+			[void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($worksheet)
+			[void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($Workbook)
+			[void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($ExcelWB)
+			[GC]::Collect()
+			Remove-Item ShutDownWatcher #remove the watch file
+			exit 1
 		  }
 		$randHour=  Get-Random -Maximum 23
 		$randMin=Get-Random -Maximum 59
 		$randSec=Get-Random -Maximum 59
 		$yestDay=(get-date (get-date).addDays(-1) -UFormat "%m/%d/%y")
-		(Get-Item "keys\\$valName.$colval.exf").LastWriteTime = "$yestDay ${randHour}:${randMin}:${randSec}"
+		(Get-Item "keys\\$valName.$colRef.exf").LastWriteTime = "$yestDay ${randHour}:${randMin}:${randSec}"
 	   $Workbook.SaveAs("$PSScriptRoot\$valName.temp")
 	   #$Workbook.SaveAs("$xFile", 6) #6 is for xlsx
 	   $Workbook.Close($false)

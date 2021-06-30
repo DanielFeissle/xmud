@@ -47,7 +47,6 @@ Write-Output $null >> ShutDownWatcher #create a file at the begining
 
 
 
-Write-Warning   "TEST"
 
 #call banner script here
 & .\pban.ps1 "xdec"
@@ -55,15 +54,12 @@ Write-Warning   "TEST"
 ###############
 
 
-# Get-Content "$PSScriptRoot\temp.txt"
-#Remove-Item "$PSScriptRoot\out\tempFile_dec.xlsx"
-#$xFile="$PSScriptRoot\out\tempFile_dec.xlsx"
 #####################
 $ExcelWB = new-object -comobject excel.application
 Write-Output "Converting to xlsx"
 $sel=Get-ChildItem -Path $PSScriptRoot -Filter "*.xlsx" 
 $sela=$sel.Name
-if (($null -eq $sela) -or !(test-path "$PSScriptRoot\keys\$sela.$colval.exf"))
+if (($null -eq $sela))
 {
 	Remove-Item ShutDownWatcher #remove the watch file
 	Write-Warning "No valid xlsx files found in directory: $pwd"
@@ -83,13 +79,20 @@ Get-ChildItem -Path $PSScriptRoot -Filter "*.xlsx" | ForEach-Object{
 			Write-Output "INTEROP counts this many columns: $countColumns"
 		   #Write-Output "">key.txt
 		   Write-Output "Extract column for faster processing"
+		   $xx=$countUsed+$countColumns
+		   $PM=Get-Random -Maximum $xx -SetSeed $colval
+		   $colRef=($PM + $colval) * ($countUsed + $countColumns)
+		   if ((test-path "$PSScriptRoot\keys\$sela.$colRef.exf"))
+		   {
+
+
 		   $testCol=$WorkSheet.Columns($colval)
 		   $testV=($testCol[1].Value2 -split '\r?\n').Trim()
 		   #$ft=$testV | Group-Object -AsHashTable -AsString
 			
 			for ($i = 0; $i -le $countUsed; $i++) {
 				$uid=$testV[$i]
-				$tc = (Get-Content "$PSScriptRoot\keys\$sela.$colval.exf")[$i]
+				$tc = (Get-Content "$PSScriptRoot\keys\$sela.$colRef.exf")[$i]
 				#$tc=$testV[$i]
 				#echo "THI " $tc
 			   # echo "THIS IS" $testV[$i]
@@ -109,12 +112,6 @@ Get-ChildItem -Path $PSScriptRoot -Filter "*.xlsx" | ForEach-Object{
 				
 				
 				}
-			
-			
-			
-			
-			   # echo "$i" "$tc"
-		   ##	Write-Host -NoNewline "."
 				}
 				#$testCol.Value2=$testV
 				Write-Host ""
@@ -127,6 +124,19 @@ Get-ChildItem -Path $PSScriptRoot -Filter "*.xlsx" | ForEach-Object{
 				Write-Host ""
 	   #echo "FINAL RESULT" $testV "END"
 			#	 $WorkSheet.Columns(4)= $testCol.Value2
+		}
+		else {
+			Write-Error "Column not found"
+			$ExcelWB.quit()
+			[void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($testCol)
+			[void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($worksheet)
+			[void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($Workbook)
+			[void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($ExcelWB)
+			[GC]::Collect()
+			Remove-Item ShutDownWatcher #remove the watch file
+			exit 1
+
+		}
 	   }
 
 	$Workbook.SaveAs("$PSScriptRoot\$valName.temp")
@@ -145,7 +155,7 @@ $ExcelWB.quit()
 [void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($Workbook)
 [void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($ExcelWB)
 [GC]::Collect()
-Remove-Item "keys\\$valName.$colval.exf"
+Remove-Item "keys\\$valName.$colRef.exf"
 Remove-Item "$PSScriptRoot\$valName"
 Move-Item -Path "$PSScriptRoot\$valName.temp" -Destination "$PSScriptRoot\$valName"
 ##wrap up and finish with excel file here
