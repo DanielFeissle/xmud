@@ -99,20 +99,26 @@ else {
 			  $testCol=$WorkSheet.Columns($colval)
 			  $testV=($testCol[1].Value2 -split '\r?\n').Trim()
 			  #$ft=$testV | Group-Object -AsHashTable -AsString
-			   
-			   for ($i = 0; $i -le $countUsed; $i++) {
+			 $order= 0..$countUsed | Get-Random -SetSeed $xx -Count $testV.Length
+			# $order
+			# $array = New-Object 'object[]' $countUsed
+			   for ($z = 0; $z -le $countUsed; $z++) {
 				   $uid=New-Guid
-				   $tc=$testV[$i]
+				   $tc=$testV[$order[$z]]
 				   
 				  # echo "THIS IS" $testV[$i]
 				   if ( $tc -ne $null)
 				   {
 					   if ($tc -ne "")
 					   {
-						  Write-Output "$tc">>"keys\\$valName.$colRef.exf"
-						  $testV[$i]="$uid"
+						   Write-Output "$tc">>"keys\\$valName.$colRef.exf"
+						 $drf=$order[$z]
+					#	 echo "WHAT IS THIS $drf act val $tc  num in sheet $z     te $te"
+						# $array[$drf]=$tc
+						  $testV[$drf]="$uid"
 						  #$df=$ft["$tc"].Count
-						  $WorkSheet.Columns.Replace("$tc","$uid") | out-null
+						  #7-1-2021-disabled due to issues with xedc combined
+						###  $WorkSheet.Columns.Replace("$tc","$uid") | out-null
 						  $te = $te + 1
 					   } 
 				   
@@ -122,6 +128,8 @@ else {
 				  # echo "$i" "$tc"
 			  ##	Write-Host -NoNewline "."
 				   }
+				  # $array
+				  # $array | Out-File -Append "keys\\$valName.$colRef.exf"
 				   #$testCol.Value2=$testV
 				   Write-Host ""
 				   Write-Host -NoNewline "Toss column back in,"

@@ -89,10 +89,13 @@ Get-ChildItem -Path $PSScriptRoot -Filter "*.xlsx" | ForEach-Object{
 		   $testCol=$WorkSheet.Columns($colval)
 		   $testV=($testCol[1].Value2 -split '\r?\n').Trim()
 		   #$ft=$testV | Group-Object -AsHashTable -AsString
-			
-			for ($i = 0; $i -le $countUsed; $i++) {
-				$uid=$testV[$i]
-				$tc = (Get-Content "$PSScriptRoot\keys\$sela.$colRef.exf")[$i]
+		   $order= 0..$countUsed | Get-Random -SetSeed $xx -Count $testV.Length
+		   #$order
+		   $te=0
+			for ($z = 0; $z -le $countUsed; $z++) {
+#echo "Current value level $i" $order[$i1]
+				$uid=$testV[$order[$z]]
+				$tc = (Get-Content "$PSScriptRoot\keys\$sela.$colRef.exf")[$te]
 				#$tc=$testV[$i]
 				#echo "THI " $tc
 			   # echo "THIS IS" $testV[$i]
@@ -102,10 +105,13 @@ Get-ChildItem -Path $PSScriptRoot -Filter "*.xlsx" | ForEach-Object{
 					{
 						if ($uid -ne "")
 						{
+							$drf=$order[$z]
+							#echo "WHAT IS THIS $drf act val $tc  num in sheet $z     te $te"
 						 #  Write-Output "$tc">>key.txt
-						   $testV[$i]="$tc"
+						   $testV[$drf]="$tc"
 						   #$df=$ft["$tc"].Count
-						   $WorkSheet.Columns.Replace("$uid","$tc") | out-null
+						   #7-1-2021-disabled due to issues with xedc combined
+						###   $WorkSheet.Columns.Replace("$uid","$tc") | out-null
 						   $te = $te + 1
 						}
 					} 
