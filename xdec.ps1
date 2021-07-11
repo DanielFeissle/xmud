@@ -89,7 +89,7 @@ Get-ChildItem -Path $PSScriptRoot -Filter "*.xlsx" | ForEach-Object{
 		   $testCol=$WorkSheet.Columns($colval)
 		   $testV=($testCol[1].Value2 -split '\r?\n').Trim()
 		   #$ft=$testV | Group-Object -AsHashTable -AsString
-		   $order= 0..$countUsed | Get-Random -SetSeed $xx -Count $testV.Length
+		   $order= 0..$countUsed | Get-Random -SetSeed ($xx+$colval) -Count $testV.Length
 		   #$order
 		   $te=0
 			for ($z = 0; $z -le $countUsed; $z++) {
