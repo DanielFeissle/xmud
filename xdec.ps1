@@ -2,8 +2,7 @@
 #June 14 2021
 #Usage: .\xdec <EXCEL File to be obstrusted> <COLUMN to be muddled>
 param([int32]$colval="4", [String]$xlsxInput="file.xlsx", [int32]$ktxt="0") 
-
-
+$ErrorActionPreference = "Stop"
 #hmm in powershell it is tougher to overwrite existing variables, It is applicable but not recommended 
 #dynamic variables/overload here
 If(!(test-path "$PSScriptRoot\\settings.conf"))
@@ -105,9 +104,12 @@ Get-ChildItem -Path $PSScriptRoot -Filter "*.xlsx" | ForEach-Object{
 					{
 						if ($uid -ne "")
 						{
+							#to keep values hidden
+							$decVal=($tc | ConvertTo-SecureString)
+							$ObsVal=[System.Net.NetworkCredential]::new("", $decVal).Password
+							#end
+							$tc=$ObsVal
 							$drf=$order[$z]
-							#echo "WHAT IS THIS $drf act val $tc  num in sheet $z     te $te"
-						 #  Write-Output "$tc">>key.txt
 						   $testV[$drf]="$tc"
 						   #$df=$ft["$tc"].Count
 						   #7-1-2021-disabled due to issues with xedc combined

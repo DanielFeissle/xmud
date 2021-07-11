@@ -2,7 +2,7 @@
 #May 27 2021
 #Usage: .\xenc <EXCEL File to be obstrusted> <COLUMN to be muddled>
 param([int32]$colval="4", [String]$xlsxInput="file.xlsx", [int32]$ktxt="0") 
-
+$ErrorActionPreference = "Stop"
 
 #hmm in powershell it is tougher to overwrite existing variables, It is applicable but not recommended 
 #dynamic variables/overload here
@@ -111,6 +111,11 @@ else {
 				   {
 					   if ($tc -ne "")
 					   {
+						#to keep values hidden
+						$ff="$tc" | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString
+						#end
+						$tc=$ff
+
 						   Write-Output "$tc">>"keys\\$valName.$colRef.exf"
 						 $drf=$order[$z]
 					#	 echo "WHAT IS THIS $drf act val $tc  num in sheet $z     te $te"

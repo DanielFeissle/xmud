@@ -35,10 +35,16 @@ if %errorlevel% EQU 0 (
 		set xedo=xenc.ps1
 	)
 )
-
+echo Make backup file in case of failure
+for /f "tokens=2-8 delims=.:/ " %%a in ("%date% %time: =0%") do set DateNtime=%%c-%%a-%%b_%%d-%%e-%%f.%%g
+copy %fime% %fime%_%DateNtime%.bak
+echo Backup done
 echo start loop
 :loop
 Powershell.exe -executionpolicy remotesigned -File  %xedo% -arguments %fileVal% %1
+if %errorlevel% NEQ 0 (
+	GOTO CryptError
+)
 shift
 if not "%~1"=="" goto loop
 
@@ -46,10 +52,18 @@ if %workDir% EQU 0 (
 	echo Move file back to start location
 	 move %fime% %fileVal%
 )
+echo No errors detected, removing backup.
+DEL %fime%_%DateNtime%.bak
 GOTO eol
 
 :entryError
 	color 4f
 	echo Data entry error
 	exit /B 1
+
+:CryptError
+	color 1f
+	echo Error During powershell scripts, refer to backup file %fime%_%DateNtime%.bak.
+	echo Depending on where the error occured, excel may be still running.
+	exit /B 2
 :eol
