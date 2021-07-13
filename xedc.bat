@@ -5,7 +5,7 @@ color 07
 echo USAGE: call this file and then call the enc/dec file.
 echo After the file, put in your column encryption seperated by spaces ( EX FILE.xlsx 5 8 10 1 )
 echo This can handle files either in current directory or in another seperate directory
-if "%1" == "" (
+if %1 == "" (
 	GOTO entryError
 )
 set fileVal=
@@ -40,8 +40,10 @@ for /f "tokens=2-8 delims=.:/ " %%a in ("%date% %time: =0%") do set DateNtime=%%
 copy %fime% %fime%_%DateNtime%.bak
 echo Backup done
 echo start loop
+set cnt=1
 :loop
-Powershell.exe -executionpolicy remotesigned -File  %xedo% -arguments %fileVal% %1
+set /a cnt=cnt+1
+Powershell.exe -executionpolicy remotesigned -File  %xedo% %fileVal% "%1" "%cnt%" "50"
 if %errorlevel% NEQ 0 (
 	GOTO CryptError
 )

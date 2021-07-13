@@ -1,9 +1,8 @@
 #Excel Encrypt (xenc)
 #May 27 2021
 #Usage: .\xenc <EXCEL File to be obstrusted> <COLUMN to be muddled>
-param([int32]$colval="4", [String]$xlsxInput="file.xlsx", [int32]$ktxt="0") 
+param([String]$xlsxInput="file.xlsx",[int32]$colval="4",[int32]$cpos="14", [int32]$ktxt="0") 
 $ErrorActionPreference = "Stop"
-
 #hmm in powershell it is tougher to overwrite existing variables, It is applicable but not recommended 
 #dynamic variables/overload here
 If(!(test-path "$PSScriptRoot\\settings.conf"))
@@ -61,7 +60,7 @@ If(!(test-path "$PSScriptRoot\\keys"))
 #################
  $ExcelWB = new-object -comobject excel.application
  Write-Output "Converting to xlsx"
- $sel=Get-ChildItem -Path $PSScriptRoot -Filter "*.xlsx" 
+ $sel=Get-ChildItem -Path $PSScriptRoot -Filter "$xlsxInput" 
  if ($null -eq $sel )
 {
 	Remove-Item ShutDownWatcher #remove the watch file
@@ -70,7 +69,7 @@ If(!(test-path "$PSScriptRoot\\keys"))
 
 }
 else {
-	Get-ChildItem -Path $PSScriptRoot -Filter "*.xlsx" | ForEach-Object{
+	Get-ChildItem -Path $PSScriptRoot -Filter "$xlsxInput" | ForEach-Object{
 		$valName=$_
 		If((test-path "$PSScriptRoot\\$valName.temp"))
 		   {
@@ -87,9 +86,16 @@ else {
 			   Write-Output "INTEROP counts this many rows: $countUsed"
 			   $countColumns = $worksheet.UsedRange.Columns.Count
 			   Write-Output "INTEROP counts this many columns: $countColumns"
+			   #op-prdat
+				# for ($zx = 1; $zx -le $countColumns; $zx++)
+				# {
+				# 	$worksheet.Cells.Item($countUsed+1, $zx).Value2="x"
+				# }
+				# $countUsed=$countUsed+1
+				#eop
 			   $xx=$countUsed+$countColumns
 			   $PM=Get-Random -Maximum $xx -SetSeed $colval
-			   $colRef=($PM + $colval) * ($countUsed + $countColumns)
+			   $colRef=($PM + $colval) * ($countUsed + $countColumns+$cpos)
 			   if (!(test-path "$PSScriptRoot\keys\$sel.$colRef.exf"))
 			   {
 	

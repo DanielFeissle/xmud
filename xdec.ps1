@@ -1,7 +1,7 @@
 #Excel Encrypt (xenc)
 #June 14 2021
 #Usage: .\xdec <EXCEL File to be obstrusted> <COLUMN to be muddled>
-param([int32]$colval="4", [String]$xlsxInput="file.xlsx", [int32]$ktxt="0") 
+param([String]$xlsxInput="file.xlsx",[int32]$colval="4",[int32]$cpos="14", [int32]$ktxt="0") 
 $ErrorActionPreference = "Stop"
 #hmm in powershell it is tougher to overwrite existing variables, It is applicable but not recommended 
 #dynamic variables/overload here
@@ -56,7 +56,7 @@ Write-Output $null >> ShutDownWatcher #create a file at the begining
 #####################
 $ExcelWB = new-object -comobject excel.application
 Write-Output "Converting to xlsx"
-$sel=Get-ChildItem -Path $PSScriptRoot -Filter "*.xlsx" 
+$sel=Get-ChildItem -Path $PSScriptRoot -Filter "$xlsxInput" 
 $sela=$sel.Name
 if (($null -eq $sela))
 {
@@ -65,7 +65,7 @@ if (($null -eq $sela))
 	exit 1
 }
 else {
-Get-ChildItem -Path $PSScriptRoot -Filter "*.xlsx" | ForEach-Object{
+Get-ChildItem -Path $PSScriptRoot -Filter "$xlsxInput" | ForEach-Object{
 	Write-Output "$_"
 	$valName=$_
 	$Workbook = $ExcelWB.Workbooks.Open($_.Fullname) 
@@ -80,7 +80,7 @@ Get-ChildItem -Path $PSScriptRoot -Filter "*.xlsx" | ForEach-Object{
 		   Write-Output "Extract column for faster processing"
 		   $xx=$countUsed+$countColumns
 		   $PM=Get-Random -Maximum $xx -SetSeed $colval
-		   $colRef=($PM + $colval) * ($countUsed + $countColumns)
+		   $colRef=($PM + $colval) * ($countUsed + $countColumns+$cpos)
 		   if ((test-path "$PSScriptRoot\keys\$sela.$colRef.exf"))
 		   {
 
