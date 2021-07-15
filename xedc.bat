@@ -37,13 +37,13 @@ if %errorlevel% EQU 0 (
 )
 echo Make backup file in case of failure
 for /f "tokens=2-8 delims=.:/ " %%a in ("%date% %time: =0%") do set DateNtime=%%c-%%a-%%b_%%d-%%e-%%f.%%g
-copy %fime% %fime%_%DateNtime%.bak
+copy "%fime%" "%fime%_%DateNtime%.bak"
 echo Backup done
 echo start loop
 set cnt=1
 :loop
 set /a cnt=cnt+1
-Powershell.exe -executionpolicy remotesigned -File  %xedo% %fileVal% "%1" "%cnt%" "50"
+Powershell.exe -executionpolicy remotesigned -File  %xedo% "%fime%" "%1" "%cnt%" "50"
 if %errorlevel% NEQ 0 (
 	GOTO CryptError
 )
@@ -52,10 +52,10 @@ if not "%~1"=="" goto loop
 
 if %workDir% EQU 0 (
 	echo Move file back to start location
-	 move %fime% %fileVal%
+	 move "%fime%" %fileVal%
 )
 echo No errors detected, removing backup.
-DEL %fime%_%DateNtime%.bak
+DEL "%fime%_%DateNtime%.bak"
 GOTO eol
 
 :entryError
