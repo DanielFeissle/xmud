@@ -101,6 +101,27 @@ else {
 	
 			  Write-Output "">"keys\\$valName.$colRef.exf"
 			  Remove-Item "keys\\$valName.$colRef.exf"
+			#fix potential issues if seperated by line breaks in column
+			  Write-Output "STANDBY..."
+			  	for ($zx = 1; $zx -lt $countUsed; $zx++)
+				{
+					if ($worksheet.Cells.Item($zx, $colval).Value2 -ne $null)
+					{
+						$fud=$worksheet.Cells.Item($zx, $colval).Value2
+					
+						if ($fud -ne "")
+						{
+							if ($fud.Contains("`n"))
+							{
+								$fud=$fud -replace "`n","_AWK523DRFBREAKER14_" #| Out-Null
+								#write back now
+								$worksheet.Cells.Item($zx, $colval).Value2=$fud
+							}
+						}
+					}
+
+				}
+
 			  Write-Output "Extract column for faster processing"
 			  $testCol=$WorkSheet.Columns($colval)
 			  $testV=($testCol[1].Value2 -split '\r?\n').Trim()
@@ -113,11 +134,18 @@ else {
 				   $tc=$testV[$order[$z]]
 				   
 				  # echo "THIS IS" $testV[$i]
-				   if ( $tc -ne $null)
-				   {
-					   if ($tc -ne "")
-					   {
+				  # if ( $tc -ne $null)
+				   #{
+					   #if ($tc -ne "")
+					   #{
 						#to keep values hidden
+						if ($tc -eq "")
+						{
+							$tc="bean$z"
+						}
+
+
+						
 						$ff="$tc" | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString
 						#end
 						$tc=$ff
@@ -131,10 +159,10 @@ else {
 						  #7-1-2021-disabled due to issues with xedc combined
 						###  $WorkSheet.Columns.Replace("$tc","$uid") | out-null
 						  $te = $te + 1
-					   } 
+					   #} 
 				   
 				   
-				   }
+				   #}
 			   
 				  # echo "$i" "$tc"
 			  ##	Write-Host -NoNewline "."

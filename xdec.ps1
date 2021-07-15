@@ -94,32 +94,45 @@ Get-ChildItem -Path $PSScriptRoot -Filter "$xlsxInput" | ForEach-Object{
 			for ($z = 0; $z -le $countUsed; $z++) {
 #echo "Current value level $i" $order[$i1]
 				$uid=$testV[$order[$z]]
+				if ($uid -eq "hi")
+				{
+					Write-Output "Not a good UID, eh."
+				}
 				$tc = (Get-Content "$PSScriptRoot\keys\$sela.$colRef.exf")[$te]
 				#$tc=$testV[$i]
 				#echo "THI " $tc
 			   # echo "THIS IS" $testV[$i]
-				if ( $tc -ne $null)
-				{
-					if ($tc -ne "")
-					{
-						if ($uid -ne "")
-						{
+				#if ( $tc -ne $null)
+				#{
+					#if ($tc -ne "")
+					#{
+						#if ($uid -ne "")
+						#{
 							#to keep values hidden
 							$decVal=($tc | ConvertTo-SecureString)
 							$ObsVal=[System.Net.NetworkCredential]::new("", $decVal).Password
 							#end
 							$tc=$ObsVal
+							if ($tc -eq "bean$z")
+							{
+								$tc=""
+							}
+							if ($tc.Contains("_AWK523DRFBREAKER14_"))
+							{
+								$tc=$tc -replace "_AWK523DRFBREAKER14_","`n" #| Out-Null
+							}
+
 							$drf=$order[$z]
 						   $testV[$drf]="$tc"
 						   #$df=$ft["$tc"].Count
 						   #7-1-2021-disabled due to issues with xedc combined
 						###   $WorkSheet.Columns.Replace("$uid","$tc") | out-null
 						   $te = $te + 1
-						}
-					} 
+						#}
+					#} 
 				
 				
-				}
+				#}
 				}
 				#$testCol.Value2=$testV
 				Write-Host ""
